@@ -202,7 +202,7 @@ Injector 是 agent，"第一个 mod 怎么装"退化为"agent 怎么首次挂上
 
 ## 6. 与 Cascade 的接口：完全复用现状，零新增
 
-- `/rooms`（聊天命令）：浏览房间目录——已有（`proxy/session.go::commandRooms`）。
+- `/rooms`（聊天命令）：浏览房间目录——已有（`proxy/session.go::commandRooms`）[xref]。
 - `/goto <code>`（聊天命令）：Cascade 解析后端 →
   `PACKET_RECONNECT_TO(178)` → `public_game_host:<jump_port>`——已有
   （Cascade `knowledge/0007`；jump_port 路由、后端地址不外露）。
@@ -341,3 +341,21 @@ store → 解压物化 → 离房 → 主菜态重载 → 重连 → `/goto` →
    系统消息报告、出口动作（`/goto` 或直连）。
 4. **安装器**（本仓）：Linux v1——落 jar + 配置 + 注册 `-javaagent` 启动钩子。
 5. **E2E**：按 §11 清单全量实测，附真实结果回报。
+
+## 14. 符号锚点（实现落点，供锚点漂移检查）
+
+- injector/src/main/java/com/corematch/rwmodinjector/Assembler.java::assembleAndJoin
+- injector/src/main/java/com/corematch/rwmodinjector/Assembler.java::extractZip
+- injector/src/main/java/com/corematch/rwmodinjector/Assembler.java::downloadVerified
+- injector/src/main/java/com/corematch/rwmodinjector/Assembler.java::applyModSet
+- injector/src/main/java/com/corematch/rwmodinjector/Assembler.java::restore
+- injector/src/main/java/com/corematch/rwmodinjector/Engine.java::runOnUIThread
+- injector/src/main/java/com/corematch/rwmodinjector/Engine.java::modsDirectory
+- injector/src/main/java/com/corematch/rwmodinjector/Engine.java::reloadUnits
+- injector/src/main/java/com/corematch/rwmodinjector/Engine.java::reconnectLast
+- injector/src/main/java/com/corematch/rwmodinjector/Engine.java::connectDirect
+- injector/src/main/java/com/corematch/rwmodinjector/ChatHookTransformer.java::ChatHookTransformer
+- injector/src/main/java/com/corematch/rwmodinjector/Manifest.java::parse
+- injector/src/main/java/com/corematch/rwmodinjector/Config.java::load
+- injector/build.sh::GAME_LIB
+- installer/install.sh::find_game_dir

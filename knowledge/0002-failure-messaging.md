@@ -51,3 +51,16 @@ Final（2026-11-08）。分类入口 `Assembler.friendlyFailure`，由
   restore 全程**零误报**——最易错报的"未连大厅"与"重载失败"两类在正常
   时序下未出现；restore 回快照态验证通过（新装模组禁用、内置模组回
   快照态、快照键全清）。
+
+## 符号锚点（供锚点漂移检查）
+
+- injector/src/main/java/com/corematch/rwmodinjector/Assembler.java::friendlyFailure
+- injector/src/main/java/com/corematch/rwmodinjector/Assembler.java::joinAsync
+- injector/src/main/java/com/corematch/rwmodinjector/Assembler.java::restoreAsync
+- injector/src/main/java/com/corematch/rwmodinjector/Assembler.java::fetchWithRetry
+- injector/src/main/java/com/corematch/rwmodinjector/Assembler.java::downloadVerified
+- injector/src/main/java/com/corematch/rwmodinjector/Assembler.java::extractZip
+- injector/src/main/java/com/corematch/rwmodinjector/Engine.java::systemMessage
+- injector/src/main/java/com/corematch/rwmodinjector/Engine.java::multiplayerActive
+- injector/src/main/java/com/corematch/rwmodinjector/Engine.java::reloadUnits
+- injector/src/test/java/com/corematch/rwmodinjector/SelfTest.java::failureClassification

@@ -91,14 +91,19 @@ public final class Assembler {
             return "A mod download arrived incomplete. You stayed in the lobby - try /inj join again.";
         }
         if (m.contains("not writable") || m.contains("cannot create mod store directory")
-                || m.contains("cannot store mod file") || m.contains("cannot place mod directory")) {
+                || m.contains("cannot store mod file") || m.contains("cannot place mod directory")
+                || m.contains("cannot create temp directory") || m.contains("cannot create directory")) {
             return "Can't write to the mod folder (permissions or disk full?). "
                     + "Fix it and try /inj join again.";
         }
         if (m.contains("exceeds the size limit")) {
             return "The room's mod pack is too large to install. Tell the server operator.";
         }
-        if (m.toLowerCase().contains("zip")) {
+        // zip 损坏: 按异常类型 + 本装配器自己的文案判定. 绝不能宽匹配
+        // "zip" 字样 —— 下载失败的报错里就带 .zip 文件名, 会误归此类.
+        if (t instanceof java.util.zip.ZipException
+                || m.contains("zip archive contains no entries")
+                || m.contains("unsafe path in zip")) {
             return "A mod file is corrupt and was NOT installed. "
                     + "The room's mod pack may be broken - tell the server operator.";
         }

@@ -1,0 +1,69 @@
+# RW-Mod-Injector CI: 构建 (引擎符号桩编译) + 自测试 + knowledge 锚点漂移检查.
+#
+# 真实构建 (injector/build.sh) 以官方客户端 game-lib.jar 为编译期符号来源;
+# 该字节码闭源、不入库、不分发 —— CI 用 ci/stubs/ 的最小签名桩代替
+# (仅编译期, 不进产物). 与生态做法对齐 (Avalon/Cascade 的 go.yml 同款
+# "构建 + 测试" 最小形态; 锚点检查用 HA-Contract 的权威脚本).
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Fetch ASM 9.7 (pinned)
+        run: |
+          curl -fL --retry 3 -o asm.jar https://repo1.maven.org/maven2/org/ow2/asm/asm/9.7/asm-9.7.jar
+          # 防假绿: 非空 + 哈希钉死 + 内容抽查
+          test -s asm.jar || { echo "ASM download is empty"; exit 1; }
+          echo "adf46d5e34940bdf148ecdd26a9ee8eea94496a72034ff7141066b3eea5c4e9d  asm.jar" | sha256sum -c -
+          unzip -l asm.jar | grep -q 'org/objectweb/asm/ClassReader.class' \
+            || { echo "ASM jar content is not what we expect"; exit 1; }
+
+      - name: Build (against engine stubs)
+        run: bash ci/build-ci.sh "$GITHUB_WORKSPACE/asm.jar"
+
+      - name: Self-test
+        run: |
+          mkdir -p injector/build/ci-test-classes
+          javac --release 8 -Xlint:-options \
+            -cp injector/build/ci-classes \
+            -d injector/build/ci-test-classes \
+            injector/src/test/java/com/corematch/rwmodinjector/SelfTest.java
+          java -cp "injector/build/ci-classes:injector/build/ci-test-classes" \
+            com.corematch.rwmodinjector.SelfTest
+
+  knowledge-anchors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Fetch anchor checker from HA-Contract main
+        run: |
+          curl -fL --retry 3 -o check-knowledge-anchors.sh \
+            https://raw.githubusercontent.com/CoreMatch/HA-Contract/main/scripts/check-knowledge-anchors.sh
+          # 防假绿: 拉取失败 curl -f 已非零; 再验非空且内容确实是锚点脚本
+          # (而不是 404 错误页/重定向页), 否则后面的"检查通过"是假绿.
+          test -s check-knowledge-anchors.sh || { echo "anchor script is empty"; exit 1; }
+          grep -q 'mechanical drift check for knowledge/ ADR entries' check-knowledge-anchors.sh \
+            || { echo "anchor script content unexpected (error page?)"; exit 1; }
+
+      - name: Check this repository's knowledge anchors
+        # 单仓 CI 没有兄弟检出, 跨仓绝对路径锚点按 HA-Contract 工作流的
+        # 同款环境变量豁免 (全工作区检出时不豁免).
+        run: ANCHOR_ALLOW_MISSING_ABS_PATHS=1 bash check-knowledge-anchors.sh
