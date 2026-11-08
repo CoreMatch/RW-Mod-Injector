@@ -81,5 +81,45 @@
 
 ---
 
+## 真环境回归（开发者/运维）
+
+一条命令重跑完整真环境回归：**真客户端 + 双真 Avalon（大厅 + 模组房）+
+真 Cascade**，验证装配主链路、敏感文案零误报、restore 回快照态，最后输出
+逐项通过/失败摘要。改动装配/热重载/出口动作相关代码后应当跑一遍。
+
+```bash
+bash scripts/regress-e2e.sh
+```
+
+**前置条件**（缺失时脚本会明确报出缺什么，不静默跳过）：
+
+- 游戏客户端目录（默认 `~/Downloads/Rusted Warfare`）；回归期间会临时
+  覆盖其 `rw-mod-injector/`、`mods/units` 与 `preferences.ini`，
+  **结束后自动还原原状**（脚本退出前不得手动中断客户端）；
+- Avalon 与 Cascade 的本地检出（默认 `../Avalon` 与 `~/Cascade`）——
+  脚本对它们**只读**：只 `go build` 出二进制，不改仓库、不改它们的配置；
+  也可以直接提供现成二进制（`RWMI_AVALON_BIN` / `RWMI_CASCADE_BIN`）；
+- 与 Avalon main 协议版本匹配的 helper jar（当前 v4；探测不到时用
+  `RWMI_HELPER_JAR` 指定）；
+- 一个测试模组目录（客户端本地必须没有，用于走完整下载路径；
+  `RWMI_TEST_MOD_DIR`）与一个 Avalon `data/` 种子目录（提供 `gameData`，
+  `RWMI_SEED_DATA_DIR`）；
+- 回归期间**不要运行游戏客户端**（脚本独占游戏目录，检测到在跑会中止）。
+
+**端口与目录**全部可用环境变量覆盖，避免与机器上其它会话撞车：
+`RWMI_LOBBY_PORT` / `RWMI_LOBBY_CONTROL_PORT` / `RWMI_MODDED_PORT` /
+`RWMI_MODDED_CONTROL_PORT` / `RWMI_CASCADE_GAME_PORT` /
+`RWMI_CASCADE_JUMP_PORT` / `RWMI_CASCADE_HTTP_PORT` / `RWMI_TMP`。
+另有两个常用开关：`RWMI_AUTORESTORE_SEC`（装配后多少秒自动 restore，
+默认 60）、`RWMI_KEEP=1`（失败排障时保留整套环境，客户端态仍会还原）。
+
+**验证内容**：环境健康门控（helper ready + Cascade 房间快照）→ 装配主链路
+（清单→下载→校验→物化→离房重载→重连→/goto 进房）→ 敏感文案零误报
+（"未连大厅/重载失败/意外失败"等只应在真实失败时出现）→ 自动 restore
+（新装模组禁用、快照键全清、大厅无幽灵玩家、玩家重连回原房）。
+退出码 0 = 全部通过。
+
+---
+
 开发者文档：设计定稿见 [`knowledge/0001-injector-design.md`](knowledge/0001-injector-design.md)，
 失败文案的触发条件与日志细节见 [`knowledge/0002-failure-messaging.md`](knowledge/0002-failure-messaging.md)。
