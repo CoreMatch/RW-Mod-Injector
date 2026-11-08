@@ -57,8 +57,9 @@ public final class Assembler {
                 try {
                     assembleAndJoin(roomCode);
                 } catch (Throwable t) {
-                    Engine.systemMessage("assembly failed: " + t.getMessage());
-                    System.err.println("[RW-Mod-Injector] assembly failed");
+                    // 玩家看到结论与下一步 (友好文案), 技术细节只进日志
+                    Engine.systemMessage(friendlyFailure(t));
+                    System.err.println("[RW-Mod-Injector] assembly failed: " + t);
                     t.printStackTrace();
                 } finally {
                     synchronized (LOCK) {
@@ -69,6 +70,55 @@ public final class Assembler {
         }, "rw-mod-injector-assemble");
         worker.setDaemon(true);
         worker.start();
+    }
+
+    /**
+     * 失败的玩家可见说明 (英语, 项目 i18n 基调): 每类失败一句人话 ——
+     * 结论 + 下一步该做什么. 技术细节 (URL / 哈希 / 堆栈) 留在日志.
+     * 分类按本装配器自己的报错文案匹配 (文案稳定, 见各步骤).
+     */
+    static String friendlyFailure(Throwable t) {
+        String m = t.getMessage() == null ? "" : t.getMessage();
+        if (m.contains("cannot fetch mod manifest")) {
+            return "Couldn't fetch the mod list for this room (control server unreachable?). "
+                    + "You stayed in the lobby - try /inj join again in a moment.";
+        }
+        if (m.contains("hash mismatch")) {
+            return "Security check failed: a mod file did not match the room manifest and was NOT installed. "
+                    + "The room's mod pack may be corrupted - tell the server operator.";
+        }
+        if (m.contains("size mismatch")) {
+            return "A mod download arrived incomplete. You stayed in the lobby - try /inj join again.";
+        }
+        if (m.contains("not writable") || m.contains("cannot create mod store directory")
+                || m.contains("cannot store mod file") || m.contains("cannot place mod directory")) {
+            return "Can't write to the mod folder (permissions or disk full?). "
+                    + "Fix it and try /inj join again.";
+        }
+        if (m.contains("exceeds the size limit")) {
+            return "The room's mod pack is too large to install. Tell the server operator.";
+        }
+        if (m.toLowerCase().contains("zip")) {
+            return "A mod file is corrupt and was NOT installed. "
+                    + "The room's mod pack may be broken - tell the server operator.";
+        }
+        if (m.contains("HTTP ") || m.contains("download failed")) {
+            return "Downloading a mod file failed (server problem). You stayed in the lobby - try /inj join again.";
+        }
+        if (m.contains("not connected to a lobby")) {
+            return "Connect to the lobby first, then use /inj join <room code>.";
+        }
+        if (m.contains("unit reload failed")) {
+            return "Applying the mod set failed during the unit reload. Your previous mod set was restored - "
+                    + "if the game misbehaves, restart it.";
+        }
+        if (m.contains("cannot reconnect")) {
+            return "Mods are applied, but reconnecting to the lobby failed - please reconnect manually.";
+        }
+        if (m.contains("game engine is not ready") || m.contains("config is not loaded")) {
+            return "The injector is not ready yet - wait a moment and try /inj join again.";
+        }
+        return "Mod assembly failed unexpectedly - check the game log for details, then try /inj join again.";
     }
 
     private static void assembleAndJoin(String roomCode) throws Exception {
