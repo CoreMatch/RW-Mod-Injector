@@ -73,4 +73,4 @@ RW-Mod-Injector 是 Rusted Warfare 客户端的模组装配器：房间需要什
 ## 相关
 
 - [开发者文档](./development.md)：注入链路、快照与 zip 处理机制
-- [回归脚本](./regression.md)：整条链路的真环境测试
+- 真环境回归：见 [README](./README.md) 的「真环境回归」节（开发者/运维向）

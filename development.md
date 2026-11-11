@@ -43,7 +43,7 @@ ci/build-ci.sh              CI 构建（stub 编译，不依赖 game-lib.jar）
 
 - CI 构建：`ci/build-ci.sh`（用 `ci/stubs` 替代 game-lib 符号）。
 - 失败分类自测试：`injector/src/test/java/com/corematch/rwmodinjector/SelfTest.java::failureClassification`。
-- 真环境回归：`bash scripts/regress-e2e.sh`，见[回归脚本](./regression.md)。
+- 真环境回归：`bash scripts/regress-e2e.sh`，见 [README](./README.md) 的「真环境回归」节与[脚本](scripts/regress-e2e.sh)头注。
 
 ## 注入链路与线程模型
 
