@@ -19,7 +19,7 @@ RW-Mod-Injector is a Linux Java agent that assembles a room's declared mods befo
 - [Deployment](deployment.md) — installation and runtime guidance
 - [Development](development.md) — implementation and integration guidance
 - [Avalon](https://github.com/CoreMatch/Avalon) — the server-side room runtime
-- [HA Contract](https://github.com/CoreMatch/HA-Contract) — canonical ecosystem contracts
+- [Armorial Contract](https://github.com/CoreMatch/HA-Contract) — canonical ecosystem contracts
 
 ## Limits
 

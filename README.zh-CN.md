@@ -19,7 +19,7 @@ RW-Mod-Injector 是 Linux Java agent，会在你加入房间之前装配该房�
 - [部署文档](deployment.md) — 安装与运行时指南
 - [开发文档](development.md) — 实现与集成指南
 - [Avalon](https://github.com/CoreMatch/Avalon) — 服务端房间运行时
-- [HA 契约](https://github.com/CoreMatch/HA-Contract) — 生态权威契约
+- [Armorial 契约](https://github.com/CoreMatch/HA-Contract) — 生态权威契约
 
 ## 使用边界
 
